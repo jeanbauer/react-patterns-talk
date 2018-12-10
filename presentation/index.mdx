@@ -1,0 +1,370 @@
+import {Cite} from 'spectacle';
+import {DarkSlide, CodeSlide} from './slides';
+import RegularComponent from './regular-component';
+import RenderProps from './render-props';
+
+### ADVANCED REACT PATTERNS
+---
+## jean bauer
+##### `<Job title="consultant" at="thoughtworks" />`
+
+---
+## `<Enquete />`
+**levanta a mão quem já trabalhou com react (pelo menos um pouquinho)**
+
+---
+## FIM
+**(nota: terminar a palestra neste slide se ninguém levantar a mão)**
+
+---
+export default DarkSlide
+
+export const transition = ['zoom']
+
+# DISCLAIMER 1
+#### quando eu submeti essa palestra pro TDC react hooks ainda não tinha saido
+
+---
+export default DarkSlide
+
+export const transition = ['zoom']
+
+# DISCLAIMER 2
+1 mês em javascript === 1 ano na vida real
+
+---
+## PATTERNS / PADRÕES
+são maneiras de fazer código para ocasiões específicas
+
+---
+
+export default CodeSlide
+
+```javascript
+const fnComponent = () => <p>sup tdc?</p>
+```
+
+---
+
+export default CodeSlide
+
+```javascript
+class ClassComponent extends React.Component {
+  render() {
+    return (
+      <p>sup tdc?</p>
+    );
+  }
+}
+```
+
+---
+
+<RegularComponent/>
+
+---
+
+export const transition = ['zoom']
+
+# Pattern 1
+High Order Component
+<Cite>uma função que recebe um componente e retorna outro</Cite>
+mas pq?
+
+---
+
+export default CodeSlide
+
+```javascript
+class CommentList extends React.Component {
+  componentDidMount() {
+    // Subscribe to changes
+    DataSource.addChangeListener(this.handleChange);
+  }
+
+  componentWillUnmount() {
+    // Clean up listener
+    DataSource.removeChangeListener(this.handleChange);
+  }
+
+  handleChange() {
+    // Update whenever the data source changes
+    this.setState({
+      comments: DataSource.getComments()
+    });
+  }
+}
+```
+
+---
+
+export default CodeSlide
+
+```javascript
+class BlogPost extends React.Component {
+  componentDidMount() {
+    DataSource.addChangeListener(this.handleChange);
+  }
+
+  componentWillUnmount() {
+    DataSource.removeChangeListener(this.handleChange);
+  }
+
+  handleChange() {
+    this.setState({
+      blogPost: DataSource.getBlogPost(this.props.id)
+    });
+  }
+}
+```
+
+---
+
+como seria usar HOC aqui?
+
+---
+
+export default CodeSlide
+
+```javascript
+// This function takes a component...
+function withSubscriptionHOC(WrappedComponent, selectData) {
+  // ...and returns another component...
+  return class extends React.Component {
+    constructor(props) {
+      super(props);
+      this.handleChange = this.handleChange.bind(this);
+      this.state = {
+        data: selectData(DataSource, props)
+      };
+    }
+
+    componentDidMount() {
+      // ... that takes care of the subscription...
+      DataSource.addChangeListener(this.handleChange);
+    }
+
+    componentWillUnmount() {
+      DataSource.removeChangeListener(this.handleChange);
+    }
+```
+---
+
+pegadinhas:
+
+```javascript
+render() {
+  // A new version of Hoc is created on every render
+  // Hoc1 !== Hoc2
+  const Hoc = enhance(MyComponent);
+  // That causes the entire subtree to unmount/remount each time!
+  return <Hoc />;
+}
+```
+- performance
+- estado do componente e filhos se perde
+
+---
+
+quando usar
+
+---
+
+connect
+
+recompose
+
+withTheme
+
+withRoutes
+
+...withQualquerCoisa
+
+---
+
+export const transition = ['zoom']
+
+# Pattern 2
+## Render props
+
+Quando nem sempre é óbvio
+
+compartilhar o estado
+
+---
+
+Dá aos consumidores do seu componente total
+controle de como o componente vai ser renderizado
+
+---
+
+<RenderProps />
+
+---
+
+```javascript
+function Usage({
+  onToggle = (...args) => console.log('onToggle', ...args),
+}) {
+  return (
+    <Toggle onToggle={onToggle}>
+      {({on, toggle}) => (
+        <div>
+          {on ? 'The button is on' : 'The button is off'}
+          <Switch on={on} onClick={toggle} />
+```
+
+---
+
+pense em RPs como props de um componente que
+você pode passar funções
+
+_
+
+ok, mas pq?
+
+---
+
+Injeção de dependência
+
+_
+
+Nesse caso, remover códigos "hard-coded"
+
+Uma função poderia usar outra função para fazer algo
+
+---
+
+
+```javascript
+// Sem Injeção
+const f = () => "O valor é: " + Math.random();
+f();
+
+_
+// Com injeção
+const f = g => "O valor é: " + g();
+f(Math.random);
+```
+
+---
+
+Como é diferente de HOC?
+
+---
+
+```
+const withRandom = (Wrapped, targetProp) =>
+  class Random extends React.Component {
+    render() {
+      return <Wrapped {...{[targetProp]: Math.random()}} />;
+    }
+  };
+const Text = props => <p>{props.children}</p>;
+
+// como usar
+const RandomText = withRandom(Text, "children");
+<RandomText/>
+```
+
+- menos flexível
+
+---
+
+qual usar?
+
+_
+
+rp: react component logic code reuse
+
+hoc: react component logic code reuse
+
+_
+
+depende :~
+
+---
+
+extra: como react hooks vai mudar o mundo de RPs?
+
+toggle normal:
+```
+function App() {
+  return (
+    <Toggle>
+      {({on, toggle}) => (
+        <button
+          onClick={toggle}>{on ? 'on' : 'off'}
+        </button>
+      )
+    </Toggle>
+  )
+}
+```
+
+---
+
+If all we wanted was simple toggle functionality, our hook version would be:
+```
+function useToggle(initialOn = false) {
+  const [on, setOn] = useState(initialOn)
+  const toggle = () => setOn(!on)
+  return {on, toggle}
+}
+```
+Then people could use that like so:
+
+```
+function App() {
+  const {on, toggle} = useToggle()
+  return (
+    <button onClick={toggle}>{on ? 'on' : 'off'}</button>
+  )
+}
+```
+
+---
+
+react hook vai matar render props ou HOC's?
+
+---
+
+# Pattern 3 (ultima)
+## Compound components
+
+---
+
+#### "Think of compound components like the `<select>` and `<option>` elements in HTML. Apart they don't do too much, but together they allow you to create the complete experience. "
+> Kent C. Dodds
+
+---
+
+Quando você clica em uma option, o select sabe qual opção você clicou.
+#### Assim como select e option, os componentes compartilham o estado por conta própria.
+Você não precisa configurá-los explicitamente.
+
+---
+
+`<codigo>`
+
+---
+
+# Você pode reorganizar os componentes em qualquer ordem
+### (sem precisar mexer na implementação)
+
+---
+
+# Contexto substitui redux? :O
+
+---
+
+Quando usar?
+
+---
+
+### Ref:
+# Kent Dodds
+
+---
+
+# Fim
