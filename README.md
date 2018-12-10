@@ -13,6 +13,10 @@ depois
 
 depois
 
+acessa `http://localhost:3000` 
+
+pronto :D
+
 
 
 
