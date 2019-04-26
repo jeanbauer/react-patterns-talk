@@ -7,23 +7,28 @@ export default class RegularComponent extends React.Component {
   };
 
   incrementCount = () => {
-    this.setState(state => ({
-      count: state.count + 1
-    }))
+    // bad pattern
+    this.setState({ count: this.state.count + 1})
+    // this.setState({ count: this.state.count + 1})
+    // this.setState({ count: this.state.count + 1})
+    // batching!
+
+    // good pattern
+    // this.setState(state => ({
+    //   count: state.count + 1
+    // }))
   }
 
   render() {
+    const { count } = this.state
+
     return (
       <div>
-        <Heading>This is a normal react component</Heading>
-        <br />
-        <Text>but you're adding it to your presentation in MDX</Text>
-        <br />
-        <Text>{this.state.count}</Text>
-        <br />
-        <Text>Click the button to rate how cool that is from 1-10</Text>
-        <br />
-        <button type="button" onClick={this.incrementCount}>Rate It</button>
+        <Heading>Sou um componente react de verdade</Heading><br />
+        <Text>(no meio de uma apresentação 🤯)</Text><br />
+        <Text>{count}</Text><br />
+        <Text>Clicar no botão para </Text><br />
+        <button onClick={this.incrementCount}>Aumentar</button>
       </div>
     )
   }

@@ -9,28 +9,47 @@ import RenderProps from './render-props';
 ##### `<Job title="consultant" at="thoughtworks" />`
 
 ---
+
+
+![npm](https://i.ibb.co/3Sr9NXv/1.png)
+
+---
+
+![npm](https://i.ibb.co/6t3vJzy/2.png)
+
+---
 ## `<Enquete />`
-**levanta a mão quem já trabalhou com react (pelo menos um pouquinho)**
+**levanta a mão ✋ quem já trabalhou com react (pelo menos um pouquinho)**
 
 ---
 ## FIM
 **(nota: terminar a palestra neste slide se ninguém levantar a mão)**
 
 ---
-export default DarkSlide
-
-export const transition = ['zoom']
-
-# DISCLAIMER 1
-#### quando eu submeti essa palestra pro TDC react hooks ainda não tinha saido
+## ADVANCED REACT PATTERNS
+advanced? react? patterns? 🤯 
 
 ---
-export default DarkSlide
 
-export const transition = ['zoom']
+## REACT
+#### 1/3
 
-# DISCLAIMER 2
-1 mês em javascript === 1 ano na vida real
+![npm](https://i.ibb.co/hmNN8Fn/npm-react-survey.png)
+
+---
+
+## REACT
+#### 2/3
+- Approximately 5 million React devs
+- There has never been a JavaScript framework this popular before
+- More than twice as popular as the next-biggest framework, Angular.
+---
+
+## REACT
+#### 3/3
+
+![npm](https://i.ibb.co/bmqSmwF/Screen-Shot-2019-04-25-at-20-50-57.png)
+
 
 ---
 ## PATTERNS / PADRÕES
@@ -64,12 +83,39 @@ class ClassComponent extends React.Component {
 
 ---
 
+# Object composition 
+
+###### Em JS, a maneira de compor objetos funciona assim:
+
+```javascript
+const objeto1  = {nome : "Objeto 1"}, 
+      objeto2 = {nome : "Objeto 2"},
+      objeto3  = Object.assign({}, objeto1, objeto2);
+
+objeto3.nome === "Objeto 2"; //true
+
+console.log(objeto3); // {nome : "Objeto 2"}
+```
+
+---
+
+# Object composition 
+
+###### Como resolver
+
+// codigo
+
+---
+
 export const transition = ['zoom']
 
-# Pattern 1
-High Order Component
-<Cite>uma função que recebe um componente e retorna outro</Cite>
-mas pq?
+# High Order Component
+
+eu: uma função que recebe um componente e retorna outro
+
+-----
+
+vocês: ok, massa, mas pq eu precisaria dela? 🤔
 
 ---
 
@@ -127,20 +173,15 @@ como seria usar HOC aqui?
 export default CodeSlide
 
 ```javascript
-// This function takes a component...
-function withSubscriptionHOC(WrappedComponent, selectData) {
-  // ...and returns another component...
+// Uma funcão que recebe um componente
+function withSubHOC(WrappedComponent, selectData) {
+  // ...e retorna outro...
   return class extends React.Component {
-    constructor(props) {
-      super(props);
-      this.handleChange = this.handleChange.bind(this);
-      this.state = {
-        data: selectData(DataSource, props)
-      };
-    }
+    state = {
+      data: selectData(DataSource, props)
+    };
 
     componentDidMount() {
-      // ... that takes care of the subscription...
       DataSource.addChangeListener(this.handleChange);
     }
 
@@ -150,15 +191,15 @@ function withSubscriptionHOC(WrappedComponent, selectData) {
 ```
 ---
 
-pegadinhas:
+anti/bad/ruim/não faça:
 
 ```javascript
 render() {
-  // A new version of Hoc is created on every render
-  // Hoc1 !== Hoc2
-  const Hoc = enhance(MyComponent);
-  // That causes the entire subtree to unmount/remount each time!
-  return <Hoc />;
+  // Uma nova versão da HOC está sendo criada a cada render
+  const meuComponenteComHOC = hoc(meuComponente);
+  
+  // Causando uma alteração em todo o nodo de DOM
+  return <meuComponenteComHOC />;
 }
 ```
 - performance
@@ -184,110 +225,79 @@ withRoutes
 
 export const transition = ['zoom']
 
-# Pattern 2
-## Render props
-
-Quando nem sempre é óbvio
-
-compartilhar o estado
-
----
+#### (inversão de responsabilidade)
+- Render props 
+- Compound components
 
 Dá aos consumidores do seu componente total
 controle de como o componente vai ser renderizado
 
 ---
 
-<RenderProps />
+# Render props 
+
+Não vou falar nada sobre isso por motivos de ...evolução!
+
+-----
+
+Desde a última vez que dei essa palestra (tdc poa) ainda era ok utilizar essa pattern. 
+
+---
+
+# Hooks
+
+#### ...contextualizando quem não trabalha com react
+
+---- 
+#### como era antes?
 
 ---
 
 ```javascript
-function Usage({
-  onToggle = (...args) => console.log('onToggle', ...args),
-}) {
-  return (
-    <Toggle onToggle={onToggle}>
-      {({on, toggle}) => (
-        <div>
-          {on ? 'The button is on' : 'The button is off'}
-          <Switch on={on} onClick={toggle} />
-```
-
----
-
-pense em RPs como props de um componente que
-você pode passar funções
-
-_
-
-ok, mas pq?
-
----
-
-Injeção de dependência
-
-_
-
-Nesse caso, remover códigos "hard-coded"
-
-Uma função poderia usar outra função para fazer algo
-
----
-
-
-```javascript
-// Sem Injeção
-const f = () => "O valor é: " + Math.random();
-f();
-
-_
-// Com injeção
-const f = g => "O valor é: " + g();
-f(Math.random);
-```
-
----
-
-Como é diferente de HOC?
-
----
-
-```
-const withRandom = (Wrapped, targetProp) =>
-  class Random extends React.Component {
-    render() {
-      return <Wrapped {...{[targetProp]: Math.random()}} />;
-    }
+class RegularComponent extends React.Component {
+  state = {
+    count: 0
   };
-const Text = props => <p>{props.children}</p>;
 
-// como usar
-const RandomText = withRandom(Text, "children");
-<RandomText/>
+  aumenta = () => {
+    this.setState(state => ({ count: state.count + 1 }))
+  }
+
+  render() {
+    return (
+      <div>
+        <p>Clicar no botão para aumentar 1</p>
+        <span>{this.state.count}</span>    
+        <button onClick={this.aumenta}>Aumenta</button>
+      </div>
+    )
+  }
+}
 ```
 
-- menos flexível
+---
+
+```javascript
+const HookComponent = () => {
+    const [count, setCount] = useState(0);
+
+    return (
+        <div>
+          <p>Clicar no botão para aumentar 1</p>
+          <span>{count}</span>
+          <button onClick={() => setCount(count + 1)}}>
+            Aumenta
+          </button>
+        </div>
+    );
+}
+```
 
 ---
 
-qual usar?
 
-_
+Como `react hooks` está mudando outras práticas?
 
-rp: react component logic code reuse
-
-hoc: react component logic code reuse
-
-_
-
-depende :~
-
----
-
-extra: como react hooks vai mudar o mundo de RPs?
-
-toggle normal:
 ```
 function App() {
   return (
@@ -302,9 +312,13 @@ function App() {
 }
 ```
 
+ex. de um toggle normal utilizando RP
+
+
 ---
 
-If all we wanted was simple toggle functionality, our hook version would be:
+Com hooks ficaria assim:
+
 ```
 function useToggle(initialOn = false) {
   const [on, setOn] = useState(initialOn)
@@ -312,8 +326,7 @@ function useToggle(initialOn = false) {
   return {on, toggle}
 }
 ```
-Then people could use that like so:
-
+Nosso cliente usaria assim:
 ```
 function App() {
   const {on, toggle} = useToggle()
@@ -325,46 +338,30 @@ function App() {
 
 ---
 
-react hook vai matar render props ou HOC's?
+Hooks vai/está substituindo render props ou HOC's?
 
 ---
 
-# Pattern 3 (ultima)
-## Compound components
+RP sim! 💀
+
+HOC, não 😅 
 
 ---
 
-#### "Think of compound components like the `<select>` and `<option>` elements in HTML. Apart they don't do too much, but together they allow you to create the complete experience. "
-> Kent C. Dodds
+Pontos de Hooks 
+
+- Legíveis e declarativos 📖
+- Alta performance (updates somente quando necessário) ⚡
+- Alta adoção da comunidade 👪
+- Não consegue controlar a renderização dado uma condição ❌
+- Arquivos gigantes com UI & lógica juntos 🙈
 
 ---
 
-Quando você clica em uma option, o select sabe qual opção você clicou.
-#### Assim como select e option, os componentes compartilham o estado por conta própria.
-Você não precisa configurá-los explicitamente.
+### Agradecimentos
 
 ---
 
-`<codigo>`
+Muito obrigado Floripa :)
 
----
-
-# Você pode reorganizar os componentes em qualquer ordem
-### (sem precisar mexer na implementação)
-
----
-
-# Contexto substitui redux? :O
-
----
-
-Quando usar?
-
----
-
-### Ref:
-# Kent Dodds
-
----
-
-# Fim
+#### Fim
